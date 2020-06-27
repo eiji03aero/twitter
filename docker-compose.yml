@@ -1,0 +1,18 @@
+version: '3.7'
+
+services:
+  workspace:
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - "3000:3000"
+    tty: true
+    command: /bin/bash
+  postgres:
+    image: postgres:12.1-alpine
+    environment:
+      POSTGRES_USER: twitter
+      POSTGRES_PASSWORD: twitter123
+      POSTGRES_DB: twitter
+    tty: true
