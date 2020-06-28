@@ -12,9 +12,6 @@
 #
 #  index_users_on_name  (name) UNIQUE
 #
-FactoryBot.define do
-  factory :user do
-    name { Faker::Internet.unique.username }
-    self_introduction { Faker::Quote.famous_last_words }
-  end
+class UserSerializer < ActiveModel::Serializer
+  attributes :id, :name, :self_introduction
 end

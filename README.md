@@ -7,6 +7,8 @@
 $ rails new twitter -T --api --skip-bundle --database postgresql
 
 # add gems
+# gem 'active_model_serializers', '~> 0.10.0'
+#
 # group :development, :test do
 #   gem 'rspec-rails'
 #   gem 'faker'

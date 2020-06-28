@@ -3,14 +3,14 @@
 # Table name: users
 #
 #  id                :bigint           not null, primary key
-#  name              :string           default(""), not null
-#  self_introduction :text             not null
+#  name              :string           not null
+#  self_introduction :text             default(""), not null
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
 #
 # Indexes
 #
-#  index_users_on_name  (name)
+#  index_users_on_name  (name) UNIQUE
 #
 require 'rails_helper'
 
@@ -21,6 +21,13 @@ RSpec.describe User, type: :model do
     describe "name" do
       it "should be present" do
         subject.name = nil
+        subject.validate
+        expect(subject.errors.include?(:name)).to be true
+      end
+
+      it "should be unique" do
+        user = create(:user)
+        subject.name = user.name
         subject.validate
         expect(subject.errors.include?(:name)).to be true
       end
