@@ -4,7 +4,7 @@ services:
   workspace:
     build: .
     volumes:
-      - .:/app
+      - v-sync-twitter:/app
     ports:
       - "3000:3000"
     tty: true
@@ -16,3 +16,7 @@ services:
       POSTGRES_PASSWORD: twitter123
       POSTGRES_DB: twitter
     tty: true
+
+volumes:
+  v-sync-twitter:
+    external: true

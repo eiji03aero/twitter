@@ -2,7 +2,7 @@ version: "2"
 options:
   verbose: false
 syncs:
-  app:
+  v-sync-twitter:
     src: '.'
     sync_excludes: ['.git']
     notify_terminal: false
