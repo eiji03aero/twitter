@@ -22,6 +22,8 @@ gem 'bootsnap', '>= 1.4.2', require: false
 # gem 'rack-cors'
 
 gem 'active_model_serializers', '~> 0.10.0'
+gem 'rolify'
+gem 'pundit'
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]

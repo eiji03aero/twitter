@@ -4,3 +4,7 @@
 require_relative 'config/application'
 
 Rails.application.load_tasks
+
+task :dev do
+  system "bin/rails s -b 0.0.0.0"
+end

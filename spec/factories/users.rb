@@ -16,5 +16,11 @@ FactoryBot.define do
   factory :user do
     name { Faker::Internet.unique.username }
     self_introduction { Faker::Quote.famous_last_words }
+
+    trait :admin do
+      before(:create) do |user, evaluator|
+        user.add_role(Role::ADMIN)
+      end
+    end
   end
 end

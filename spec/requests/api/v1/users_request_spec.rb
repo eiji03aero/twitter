@@ -1,47 +1,56 @@
 require "rails_helper"
 
 RSpec.describe "Api::V1::Users", type: :request do
-  before(:each) do
-    JSON
-  end
+  let!(:user) { create(:user) }
+  let!(:admin) { create(:user, :admin) }
+  let(:current_user) { user }
+  let(:request_params) {{
+    user_id: current_user.id
+  }}
 
   describe "GET /api/v1/users" do
-    let(:user) { create(:user) }
-
     before(:each) do
-      allow(User).to receive(:all).and_return([user])
-      expect(User).to receive(:all)
-      get "/api/v1/users", as: :json
+      get "/api/v1/users", params: request_params
     end
 
-    context "when data is valid" do
-      it "returns users" do
-        expected = [UserSerializer.new(user)].to_json
-        expect(response.body).to eq expected
-      end
+    context "regular user" do
+      let(:current_user) { user }
 
-      it "returns status code 200" do
+      it "returns users" do
+        expect(JSON.parse(response.body).empty?).to be_falsy
+        expect(response).to have_http_status(200)
+      end
+    end
+
+    context "admin user" do
+      let(:current_user) { admin }
+
+      it "returns users" do
+        expect(JSON.parse(response.body).empty?).to be_falsy
         expect(response).to have_http_status(200)
       end
     end
   end
 
   describe "GET /api/v1/users/:id" do
-    let(:user) { create(:user) }
-
     before(:each) do
-      allow(User).to receive(:find).and_return(user)
-      expect(User).to receive(:find)
-      get "/api/v1/users/#{user.id}", as: :json
+      get "/api/v1/users/#{user.id}", params: request_params
     end
 
-    context "when data is valid" do
-      it "returns user" do
-        expected = UserSerializer.new(user).to_json
-        expect(response.body).to eq expected
-      end
+    context "regular user" do
+      let(:current_user) { user }
 
-      it "returns status code 200" do
+      it "returns user" do
+        expect(JSON.parse(response.body).empty?).to be_falsy
+        expect(response).to have_http_status(200)
+      end
+    end
+
+    context "admin user" do
+      let(:current_user) { admin }
+
+      it "returns users" do
+        expect(JSON.parse(response.body).empty?).to be_falsy
         expect(response).to have_http_status(200)
       end
     end
@@ -49,84 +58,111 @@ RSpec.describe "Api::V1::Users", type: :request do
 
   describe "POST /api/v1/users" do
     let(:name) { Faker::Internet.unique.username }
-    let(:params) do
-      {
-        name: name,
-        self_introduction: "hoge",
-      }
-    end
+    let(:params) {{
+      name: name,
+      self_introduction: "hoge",
+    }}
 
     before(:each) do
-      post "/api/v1/users", params: params, as: :json
+      post "/api/v1/users", params: request_params.merge({user: params})
     end
 
-    context "when data is valid" do
-      it "returns user" do
-        result = JSON.parse(response.body, symbolize_names: true)
-        expect(result).to include params
+    context "regular user" do
+      let(:current_user) { user }
+
+      context "when data is valid" do
+        it "creates user" do
+          expect(JSON.parse(response.body, symbolize_names: true)).to include params
+          expect(response).to have_http_status(200)
+        end
       end
 
-      it "returns status code 200" do
-        expect(response).to have_http_status(200)
+      context "when data is invalid" do
+        let(:name) { nil }
+
+        it "returns status code 400" do
+          expect(response).to have_http_status(400)
+        end
       end
     end
 
-    context "when data is invalid" do
-      let(:name) { nil }
+    context "admin user" do
+      let(:current_user) { admin }
 
-      it "returns status code 400" do
-        expect(response).to have_http_status(400)
+      context "when data is valid" do
+        it "creates user" do
+          expect(JSON.parse(response.body, symbolize_names: true)).to include params
+          expect(response).to have_http_status(200)
+        end
       end
 
-      it "returns status code 400" do
-        expect(response).to have_http_status(400)
+      context "when data is invalid" do
+        let(:name) { nil }
+
+        it "returns status code 400" do
+          expect(response).to have_http_status(400)
+        end
       end
     end
   end
 
   describe "PATCH /api/v1/users/:id" do
-    let(:user) { create(:user) }
-    let(:params) do
-      {
-        user: {}
-      }
-    end
+    let(:target_user) { create(:user) }
+    let(:params) {{
+    }}
 
     before(:each) do
-      patch "/api/v1/users/#{user.id}", params: params, as: :json
+      patch "/api/v1/users/#{target_user.id}", params: request_params.merge({user: params})
     end
 
-    context "when data is valid" do
-      let(:params) do
-        {
-          user: {
-            name: "hoge"
-          }
-        }
+    context "regular user" do
+      let(:current_user) { target_user }
+
+      context "when data is valid" do
+        let(:params) {{
+          name: "hoge"
+        }}
+
+        it "returns updated user" do
+          expect(JSON.parse(response.body, symbolize_names: true)).to include params
+          expect(response).to have_http_status(200)
+        end
       end
 
-      it "returns updated user" do
-        result = JSON.parse(response.body, symbolize_names: true)
-        expect(result).to include params[:user]
-      end
+      context "when data is invalid" do
+        let(:params) {{
+          name: nil
+        }}
 
-      it "returns status code 200" do
-        expect(response).to have_http_status(200)
+        it "returns status code 400" do
+          expect(response).to have_http_status(400)
+        end
       end
     end
   end
 
   describe "DELETE /api/v1/users/:id" do
-    let(:user) { create(:user) }
+    let(:target_user) { create(:user) }
 
     before(:each) do
-      delete "/api/v1/users/#{user.id}", as: :json
+      delete "/api/v1/users/#{target_user.id}", params: request_params, as: :json
     end
 
-    context "when data is valid" do
-      it "returns deleted user" do
+    context "regular user" do
+      let(:current_user) { target_user }
+
+      it "deletes user" do
         result = JSON.parse(response.body, symbolize_names: true)
-        expect(result[:id]).to eq user.id
+        expect(result[:id]).to eq target_user.id
+      end
+    end
+
+    context "admin user" do
+      let(:current_user) { admin }
+
+      it "deletes user" do
+        result = JSON.parse(response.body, symbolize_names: true)
+        expect(result[:id]).to eq target_user.id
       end
     end
   end

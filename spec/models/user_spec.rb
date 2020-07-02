@@ -12,7 +12,7 @@
 #
 #  index_users_on_name  (name) UNIQUE
 #
-require 'rails_helper'
+require "rails_helper"
 
 RSpec.describe User, type: :model do
   describe "validations" do
@@ -39,6 +39,20 @@ RSpec.describe User, type: :model do
         subject.validate
         expect(subject.errors.include?(:self_introduction)).to be true
       end
+    end
+  end
+
+  describe "roles" do
+    it "should have regular role by default " do
+      user = create(:user)
+      expect(user.has_role? Role::REGULAR).to be_truthy
+    end
+
+    it "can be assigned admin role " do
+      user = build(:user)
+      user.add_role(Role::ADMIN)
+      user.save
+      expect(user.has_role? Role::ADMIN).to be_truthy
     end
   end
 end

@@ -8,6 +8,8 @@ $ rails new twitter -T --api --skip-bundle --database postgresql
 
 # add gems
 # gem 'active_model_serializers', '~> 0.10.0'
+# gem 'rolify'
+# gem 'pundit'
 #
 # group :development, :test do
 #   gem 'rspec-rails'
@@ -24,14 +26,12 @@ $ rails new twitter -T --api --skip-bundle --database postgresql
 # configure config/database.yml
 
 $ bundle install
-
 $ bin/rails db:create
-
 $ rails g rspec:install
-
 $ bundle exec guard init rspec
-
 $ bundle exec rails g annotate:install
+$ bundle exec rails g rolify Role User
+$ bundle exec rails g pundit:install
 ```
 
 # Todos
@@ -44,8 +44,6 @@ $ bundle exec rails g annotate:install
 
 # Apis
 ```
-- crud user
-  - policy
 - crud micro_post
   - policy
 - user follows user
