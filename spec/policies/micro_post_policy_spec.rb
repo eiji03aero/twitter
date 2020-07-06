@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe UserPolicy, type: :policy do
+RSpec.describe MicroPostPolicy, type: :policy do
   subject { described_class }
 
   let(:user) { create(:user) }
@@ -8,13 +8,13 @@ RSpec.describe UserPolicy, type: :policy do
 
   permissions ".scope" do
     it "allows all for admin" do
-      expect(User).to receive(:all)
-      subject::Scope.new(admin, User).resolve
+      expect(MicroPost).to receive(:all)
+      subject::Scope.new(admin, MicroPost).resolve
     end
 
-    it "allows oneself for regular" do
-      expect(User).to receive(:where).with(id: user.id)
-      subject::Scope.new(user, User).resolve
+    it "allows owned ones" do
+      expect(MicroPost).to receive(:where).with(user_id: user.id)
+      subject::Scope.new(user, MicroPost).resolve
     end
   end
 
@@ -27,11 +27,13 @@ RSpec.describe UserPolicy, type: :policy do
 
   permissions :update?, :destroy? do
     it "grants access for admin" do
-      expect(subject).to permit(admin, User.new)
+      post = create(:micro_post, user_id: admin.id)
+      expect(subject).to permit(admin, post)
     end
 
     it "grants access if owns" do
-      expect(subject).to permit(user, user)
+      post = create(:micro_post, user_id: user.id)
+      expect(subject).to permit(user, post)
     end
   end
 end

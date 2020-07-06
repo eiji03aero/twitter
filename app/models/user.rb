@@ -14,13 +14,14 @@
 #
 class User < ApplicationRecord
   MAX_LEN_SELF_INTRODUCTION = 300
+  rolify
 
   after_create :after_create
 
+  has_many :micro_posts
+
   validates :name, presence: true, uniqueness: true
   validates :self_introduction, length: { maximum: MAX_LEN_SELF_INTRODUCTION }
-
-  rolify
 
   def after_create
     self.add_role(Role::REGULAR) if self.roles.blank?

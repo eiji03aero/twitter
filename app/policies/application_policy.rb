@@ -35,7 +35,7 @@ class ApplicationPolicy
   end
 
   def admin?
-    user.has_role?(Role::ADMIN)
+    user.present? && user.has_role?(Role::ADMIN)
   end
 
   def public?
@@ -59,7 +59,7 @@ class ApplicationPolicy
     end
 
     def admin?
-      user.has_role?(Role::ADMIN)
+      user.present? && user.has_role?(Role::ADMIN)
     end
   end
 end

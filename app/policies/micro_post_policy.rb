@@ -1,6 +1,6 @@
-class UserPolicy < ApplicationPolicy
+class MicroPostPolicy < ApplicationPolicy
   def owns?
-    admin? || user.id == record.id
+    admin? || record.user == user
   end
 
   alias_method :index?, :public?
@@ -15,7 +15,7 @@ class UserPolicy < ApplicationPolicy
       if admin?
         scope.all
       else
-        scope.where(id: user.id)
+        scope.where(user_id: user.id)
       end
     end
   end

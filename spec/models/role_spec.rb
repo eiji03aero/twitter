@@ -17,5 +17,15 @@
 require 'rails_helper'
 
 RSpec.describe Role, type: :model do
-  pending "add some examples to (or delete) #{__FILE__}"
+  describe "validations" do
+    subject { MicroPost.new }
+
+    describe "content" do
+      it "should not be too long" do
+        subject.content = "a" * (MicroPost::MAX_LEN_CONTENT + 1)
+        subject.validate
+        expect(subject.errors.include?(:content)).to be true
+      end
+    end
+  end
 end

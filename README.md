@@ -36,16 +36,25 @@ $ bundle exec rails g pundit:install
 
 # Todos
 ```
-- crud user
-  - add model
-  - controller
-    - serializer
+- user follows user
+- get post feeds for certain user
+- search post
+- retweet post
+- direct message
 ```
 
 # Apis
 ```
+- crud user
+  - add model
+  - controller
+    - serializer
+    - policy
 - crud micro_post
-  - policy
+  - add model
+  - controller
+    - serializer
+    - policy
 - user follows user
 - get post feeds for certain user
 - search post
@@ -56,9 +65,8 @@ $ bundle exec rails g pundit:install
 
 # Models
 ```
-
 - User
-  - has_many micro_post
+  - has_many micro_posts
   - attributes
     - id: integer
     - name: string
