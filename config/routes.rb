@@ -5,6 +5,8 @@ Rails.application.routes.draw do
     namespace :v1 do
       resources :users, only: [:index, :show, :create, :update, :destroy]
       resources :micro_posts, only: [:index, :show, :create, :update, :destroy]
+      resources :follow_relationships, only: [:create, :destroy] do
+      end
     end
   end
 end
