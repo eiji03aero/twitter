@@ -1,12 +1,17 @@
 class ApplicationController < ActionController::API
   include Pundit
+  before_action :authenticate_request
   after_action :verify_authorized
 
-  def current_user
-    User.find_by(id: params[:user_id])
-  end
+  attr_reader :current_user
 
-  def is_logged_in?
-    current_user.present?
+  def authenticate_request
+    command = AuthorizeApiRequest.call(request.headers)
+    unless command.success?
+      render json: { error: 'Not authorized' }, status: :unauthorized
+      return
+    end
+
+    @current_user = command.result
   end
 end

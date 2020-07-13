@@ -15,5 +15,9 @@
 FactoryBot.define do
   factory :micro_post do
     content { Faker::Quote.famous_last_words }
+
+    trait :invalid do
+      content { Faker::Lorem.paragraph_by_chars(number: MicroPost::MAX_LEN_CONTENT + 1)}
+    end
   end
 end

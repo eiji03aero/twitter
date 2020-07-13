@@ -4,6 +4,7 @@
 #
 #  id                :bigint           not null, primary key
 #  name              :string           not null
+#  password_digest   :string
 #  self_introduction :text             default(""), not null
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
@@ -14,6 +15,8 @@
 #
 class User < ApplicationRecord
   MAX_LEN_SELF_INTRODUCTION = 300
+
+  has_secure_password
   rolify
 
   after_create :after_create

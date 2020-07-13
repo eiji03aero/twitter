@@ -1,7 +1,10 @@
 class Api::V1::UsersController < ApplicationController
+  skip_before_action :authenticate_request,
+    only: [:index, :create, :show]
+
   def index
     authorize User
-    users = policy_scope(User)
+    users = User.all
     render json: users, each_serializer: UserSerializer
   end
 
@@ -46,6 +49,6 @@ class Api::V1::UsersController < ApplicationController
 
   private
     def user_params
-      params.require(:user).permit(:name, :self_introduction)
+      params.require(:user).permit(:name, :self_introduction, :password)
     end
 end

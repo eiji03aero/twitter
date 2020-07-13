@@ -1,169 +1,153 @@
 require "rails_helper"
 
 RSpec.describe "Api::V1::Users", type: :request do
-  let!(:user) { create(:user) }
-  let!(:admin) { create(:user, :admin) }
-  let(:current_user) { user }
-  let(:request_params) {{
-    user_id: current_user.id
-  }}
+  include_context 'api'
+
+  let(:model_class) { User }
+  let!(:users) { FactoryBot.create_list(:user, 2) }
 
   describe "GET /api/v1/users" do
-    before(:each) do
-      get "/api/v1/users", params: request_params
-    end
+    subject(:send_request) { get "/api/v1/users", headers: auth_headers }
 
     context "regular user" do
-      let(:current_user) { user }
+      include_context 'logged in', :regular
+
+      include_examples 'expects http status code', 200
 
       it "returns users" do
-        expect(JSON.parse(response.body).empty?).to be_falsy
-        expect(response).to have_http_status(200)
+        send_request
+        expect(response.parsed_body.length).to eq User.count
       end
     end
 
     context "admin user" do
-      let(:current_user) { admin }
+      include_context 'logged in', :admin
+
+      include_examples 'expects http status code', 200
 
       it "returns users" do
-        expect(JSON.parse(response.body).empty?).to be_falsy
-        expect(response).to have_http_status(200)
+        send_request
+        expect(response.parsed_body.length).to eq User.count
       end
     end
   end
 
   describe "GET /api/v1/users/:id" do
-    before(:each) do
-      get "/api/v1/users/#{user.id}", params: request_params
-    end
+    subject(:send_request) { get "/api/v1/users/#{current_user.id}", headers: auth_headers }
+    let(:expected_response) {
+      current_user
+        .serializable_hash
+        .slice('name', 'self_introduction')
+    }
 
     context "regular user" do
-      let(:current_user) { user }
-
-      it "returns user" do
-        expect(JSON.parse(response.body).empty?).to be_falsy
-        expect(response).to have_http_status(200)
-      end
+      include_context 'logged in', :regular
+      include_examples 'expects http status code', 200
+      include_examples 'expects http response with json'
     end
 
     context "admin user" do
-      let(:current_user) { admin }
-
-      it "returns users" do
-        expect(JSON.parse(response.body).empty?).to be_falsy
-        expect(response).to have_http_status(200)
-      end
+      include_context 'logged in', :admin
+      include_examples 'expects http status code', 200
+      include_examples 'expects http response with json'
     end
   end
 
   describe "POST /api/v1/users" do
-    let(:name) { Faker::Internet.unique.username }
-    let(:params) {{
-      name: name,
-      self_introduction: "hoge",
-    }}
-
-    before(:each) do
-      post "/api/v1/users", params: request_params.merge({user: params})
-    end
+    subject(:send_request) { post "/api/v1/users", params: params, headers: auth_headers }
+    let(:valid_params) {{ user: FactoryBot.attributes_for(:user) }}
+    let(:invalid_params) {{ user: FactoryBot.attributes_for(:user, name: nil) }}
+    let(:params) { valid_params }
+    let(:expected_response) {
+      params[:user]
+        .slice('name', 'self_introduction')
+    }
 
     context "regular user" do
-      let(:current_user) { user }
+      include_context 'logged in', :regular
 
       context "when data is valid" do
-        it "creates user" do
-          expect(JSON.parse(response.body, symbolize_names: true)).to include params
-          expect(response).to have_http_status(200)
-        end
+        let(:params) { valid_params }
+        include_examples 'expects http status code', 200
+        include_examples 'expects http response with json'
       end
 
       context "when data is invalid" do
-        let(:name) { nil }
-
-        it "returns status code 400" do
-          expect(response).to have_http_status(400)
-        end
+        let(:params) { invalid_params }
+        include_examples 'expects http status code', 400
       end
     end
 
     context "admin user" do
-      let(:current_user) { admin }
+      include_context 'logged in', :admin
 
       context "when data is valid" do
-        it "creates user" do
-          expect(JSON.parse(response.body, symbolize_names: true)).to include params
-          expect(response).to have_http_status(200)
-        end
+        let(:params) { valid_params }
+        include_examples 'expects http status code', 200
+        include_examples 'expects http response with json'
       end
 
       context "when data is invalid" do
-        let(:name) { nil }
-
-        it "returns status code 400" do
-          expect(response).to have_http_status(400)
-        end
+        let(:params) { invalid_params }
+        include_examples 'expects http status code', 400
       end
     end
   end
 
   describe "PATCH /api/v1/users/:id" do
-    let(:target_user) { create(:user) }
-    let(:params) {{
-    }}
-
-    before(:each) do
-      patch "/api/v1/users/#{target_user.id}", params: request_params.merge({user: params})
-    end
+    subject(:send_request) { patch "/api/v1/users/#{current_user.id}", params: params, headers: auth_headers }
+    let(:valid_params) {{ user: FactoryBot.attributes_for(:user) }}
+    let(:invalid_params) {{ user: FactoryBot.attributes_for(:user, name: nil) }}
+    let(:params) { valid_params }
+    let(:expected_response) {
+      params[:user]
+        .slice('name', 'self_introduction')
+    }
 
     context "regular user" do
-      let(:current_user) { target_user }
+      include_context 'logged in', :regular
 
       context "when data is valid" do
-        let(:params) {{
-          name: "hoge"
-        }}
-
-        it "returns updated user" do
-          expect(JSON.parse(response.body, symbolize_names: true)).to include params
-          expect(response).to have_http_status(200)
-        end
+        let(:params) { valid_params }
+        include_examples 'expects http status code', 200
+        include_examples 'expects http response with json'
       end
 
       context "when data is invalid" do
-        let(:params) {{
-          name: nil
-        }}
+        let(:params) { invalid_params }
+        include_examples 'expects http status code', 400
+      end
+    end
 
-        it "returns status code 400" do
-          expect(response).to have_http_status(400)
-        end
+    context "admin user" do
+      include_context 'logged in', :admin
+
+      context "when data is valid" do
+        let(:params) { valid_params }
+        include_examples 'expects http status code', 200
+        include_examples 'expects http response with json'
+      end
+
+      context "when data is invalid" do
+        let(:params) { invalid_params }
+        include_examples 'expects http status code', 400
       end
     end
   end
 
   describe "DELETE /api/v1/users/:id" do
-    let(:target_user) { create(:user) }
-
-    before(:each) do
-      delete "/api/v1/users/#{target_user.id}", params: request_params, as: :json
-    end
+    subject(:send_request) { delete "/api/v1/users/#{current_user.id}", headers: auth_headers }
 
     context "regular user" do
-      let(:current_user) { target_user }
-
-      it "deletes user" do
-        result = JSON.parse(response.body, symbolize_names: true)
-        expect(result[:id]).to eq target_user.id
-      end
+      include_context 'logged in', :regular
+      include_examples 'expects http status code', 200
+      include_examples 'deletes record'
     end
 
     context "admin user" do
-      let(:current_user) { admin }
-
-      it "deletes user" do
-        result = JSON.parse(response.body, symbolize_names: true)
-        expect(result[:id]).to eq target_user.id
-      end
+      include_context 'logged in', :admin
+      include_examples 'expects http status code', 200
+      include_examples 'deletes record'
     end
   end
 end

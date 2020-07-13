@@ -1,78 +1,153 @@
 require 'rails_helper'
 
 RSpec.describe "Api::V1::MicroPosts", type: :request do
-  let!(:current_user) { FactoryBot.create(:user, :admin) }
-  let(:request_params) {{
-    user_id: current_user.id
-  }}
-  let!(:micro_posts) { FactoryBot.create_list :micro_post, 2, user: current_user }
+  include_context 'api'
+
+  let(:model_class) { MicroPost }
+  let(:valid_params) {{ micro_post: FactoryBot.attributes_for(:micro_post, user_id: current_user.id) }}
+  let(:invalid_params) {{ micro_post: FactoryBot.attributes_for(:micro_post, :invalid, user_id: current_user.id) }}
 
   describe "GET /api/v1/micro_posts" do
-    it "returns 200" do
-      get "/api/v1/micro_posts", params: request_params
-      expect(response.status).to eq 200
+    subject(:send_request) { get "/api/v1/micro_posts", headers: auth_headers }
+
+    context "regular user" do
+      include_context 'logged in', :regular
+
+      include_examples 'expects http status code', 200
+
+      it 'returns micro_posts' do
+        send_request
+        expect(response.parsed_body.length).to eq MicroPost.count
+      end
     end
 
-    it "returns all micro_posts" do
-      get "/api/v1/micro_posts", params: request_params
-      expect(response_json_body.length).to eq 2
+    context "admin user" do
+      include_context 'logged in', :admin
+
+      include_examples 'expects http status code', 200
+
+      it 'returns micro_posts' do
+        send_request
+        expect(response.parsed_body.length).to eq MicroPost.count
+      end
     end
   end
 
   describe "GET /api/v1/micro_posts/:id" do
-    let(:micro_post) { micro_posts.first }
+    subject(:send_request) { get "/api/v1/micro_posts/#{micro_post.id}", headers: auth_headers }
+    let(:micro_post) { FactoryBot.create(:micro_post, user_id: current_user.id) }
+    let(:expected_response) {
+      micro_post
+        .serializable_hash
+        .slice('content')
+    }
 
-    it "returns 200" do
-      get "/api/v1/micro_posts/#{micro_post.id}", params: request_params
-      expect(response.status).to eq 200
+    context "regular user" do
+      include_context 'logged in', :regular
+      include_examples 'expects http response with json'
     end
 
-    it "returns micro_post" do
-      get "/api/v1/micro_posts/#{micro_post.id}", params: request_params
-      expect(response_json_body["id"]).to eq micro_post.id
+    context "admin user" do
+      include_context 'logged in', :admin
+      include_examples 'expects http response with json'
     end
   end
 
   describe "POST /api/v1/micro_posts" do
-    it "returns 201" do
-      post "/api/v1/micro_posts", params: request_params.merge({ micro_post: FactoryBot.attributes_for(:micro_post, user_id: current_user.id) })
-      expect(response.status).to eq 201
+    subject(:send_request) { post "/api/v1/micro_posts", params: params, headers: auth_headers }
+    let(:expected_response) {
+      params[:micro_post]
+        .slice('content')
+    }
+
+    context "regular user" do
+      include_context 'logged in', :regular
+
+      context "when data is valid" do
+        let(:params) { valid_params }
+        include_examples 'expects http status code', 201
+        include_examples 'expects http response with json'
+        include_examples 'creates record', 1
+      end
+
+      context "when data is invalid" do
+        let(:params) { invalid_params }
+        include_examples 'expects http status code', 400
+      end
     end
 
-    it "creates micro_post" do
-      expect do
-        post "/api/v1/micro_posts", params: request_params.merge({ micro_post: FactoryBot.attributes_for(:micro_post, user_id: current_user.id) })
-      end.to change(MicroPost, :count).by(1)
+    context "admin user" do
+      include_context 'logged in', :admin
+
+      context "when data is valid" do
+        let(:params) { valid_params }
+        include_examples 'expects http status code', 201
+        include_examples 'expects http response with json'
+        include_examples 'creates record', 1
+      end
+
+      context "when data is invalid" do
+        let(:params) { invalid_params }
+        include_examples 'expects http status code', 400
+      end
     end
   end
 
   describe "PATCH /api/v1/micro_posts/:id" do
-    let(:micro_post) { micro_posts.first }
+    subject(:send_request) { patch "/api/v1/micro_posts/#{micro_post.id}", params: params, headers: auth_headers }
+    let(:micro_post) { FactoryBot.create(:micro_post, user_id: current_user.id) }
+    let(:expected_response) {
+      params[:micro_post]
+        .slice('content')
+    }
 
-    it "returns 200" do
-      patch "/api/v1/micro_posts/#{micro_post.id}", params: request_params.merge({ micro_post: { content: "hoge" } })
-      expect(response.status).to eq 200
+    context "regular user" do
+      include_context 'logged in', :regular
+
+      context "when data is valid" do
+        let(:params) { valid_params }
+        include_examples 'expects http status code', 200
+        include_examples 'expects http response with json'
+      end
+
+      context "when data is invalid" do
+        let(:params) { invalid_params }
+        include_examples 'expects http status code', 400
+      end
     end
 
-    it "updates micro_post" do
-      expect do
-        patch "/api/v1/micro_posts/#{micro_post.id}", params: request_params.merge({ micro_post: { content: "hoge" } })
-      end.to change { MicroPost.find(micro_post.id).content }.from(micro_post.content).to("hoge")
+    context "admin user" do
+      include_context 'logged in', :admin
+
+      context "when data is valid" do
+        let(:params) { valid_params }
+        include_examples 'expects http status code', 200
+        include_examples 'expects http response with json'
+      end
+
+      context "when data is invalid" do
+        let(:params) { invalid_params }
+        include_examples 'expects http status code', 400
+      end
     end
   end
 
   describe "DELETE /api/v1/micro_posts/:id" do
+    subject(:send_request) { delete "/api/v1/micro_posts/#{micro_post.id}", headers: auth_headers }
     let!(:micro_post) { FactoryBot.create(:micro_post, user_id: current_user.id) }
 
-    it "returns 200" do
-      delete "/api/v1/micro_posts/#{micro_post.id}", params: request_params
-      expect(response.status).to eq 200
+    context "regular user" do
+      include_context 'logged in', :regular
+
+      include_examples 'expects http status code', 200
+      include_examples 'deletes record', -1
     end
 
-    it "deletes micro_post" do
-      expect do
-        delete "/api/v1/micro_posts/#{micro_post.id}", params: request_params
-      end.to change(MicroPost, :count).by(-1)
+    context "admin user" do
+      include_context 'logged in', :admin
+
+      include_examples 'expects http status code', 200
+      include_examples 'deletes record', -1
     end
   end
 end

@@ -1,7 +1,10 @@
 class Api::V1::MicroPostsController < ApplicationController
+  skip_before_action :authenticate_request,
+    only: [:index, :create, :show]
+
   def index
     authorize MicroPost
-    micro_posts = policy_scope(MicroPost)
+    micro_posts = MicroPost.all
     render json: micro_posts, each_serializer: MicroPostSerializer
   end
 

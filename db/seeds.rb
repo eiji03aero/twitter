@@ -2,7 +2,8 @@ User.delete_all
 
 admin = User.new(
   name: "eijiosos",
-  self_introduction: "ganbari-"
+  self_introduction: "ganbari-",
+  password: 'hoge',
 )
 admin.add_role(Role::ADMIN)
 admin.save
