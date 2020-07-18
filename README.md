@@ -36,11 +36,8 @@ $ bundle exec rails g pundit:install
 
 # Todos
 ```
-- add jwt authentication
-- refactor rspec
-  - add shared_examples to check if endpoint is public
-- get post feeds for certain user
 - search post
+  - research full text search
 - retweet post
 - direct message
 ```

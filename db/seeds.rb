@@ -9,8 +9,24 @@ admin.add_role(Role::ADMIN)
 admin.save
 
 5.times do
-  User.create(
-    name: Faker::Internet.unique.username,
-    self_introduction: Faker::Quote.famous_last_words
+  admin.micro_posts.create(
+    content: Faker::Quote.famous_last_words
   )
+end
+
+5.times do
+  u = User.create(
+    name: Faker::Internet.unique.username,
+    self_introduction: Faker::Quote.famous_last_words,
+    password: 'hoge',
+  )
+
+  admin.follow(u)
+  u.follow(admin)
+
+  3.times do
+    u.micro_posts.create(
+      content: Faker::Quote.famous_last_words
+    )
+  end
 end
