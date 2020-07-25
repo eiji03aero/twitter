@@ -37,9 +37,17 @@ $ bundle exec rails g pundit:install
 # Todos
 ```
 - search post
-  - research full text search
-- retweet post
-- direct message
+  - try elasticsearch
+  - service
+    - ElasticsearchService::MicroPost
+  - search options
+    - post content
+    - hash
+- search user
+  - search options
+    - user name
+    - user self_introduction
+    - user's post content
 ```
 
 # Apis
@@ -58,8 +66,6 @@ $ bundle exec rails g pundit:install
 - get post feeds for certain user
 - search post
 - retweet post
-- direct message
-
 ```
 
 # Models

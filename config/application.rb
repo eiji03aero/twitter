@@ -19,6 +19,8 @@ require "action_cable/engine"
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
+require 'elasticsearch/rails/instrumentation'
+
 module Twitter
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.

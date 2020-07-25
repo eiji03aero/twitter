@@ -2,20 +2,39 @@ version: '3.7'
 
 services:
   workspace:
-    build: .
+    build:
+      context: .
+      dockerfile: ./docker/app/Dockerfile
+    environment:
+      - "ELASTICSEARCH_HOST=elasticsearch"
+      - "ELASTICSEARCH_PORT=9200"
     volumes:
       - v-sync-twitter:/app
     ports:
       - "3000:3000"
     tty: true
     command: /bin/bash
+
   postgres:
-    image: postgres:12.1-alpine
+    build:
+      context: .
+      dockerfile: ./docker/postgres/Dockerfile
     environment:
       POSTGRES_USER: twitter
       POSTGRES_PASSWORD: twitter123
       POSTGRES_DB: twitter
     tty: true
+
+  elasticsearch:
+    build:
+      context: .
+      dockerfile: ./docker/elasticsearch/Dockerfile
+    ports:
+      - 9200:9200
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "xpack.security.enabled=false"
+      - "xpack.monitoring.enabled=false"
 
 volumes:
   v-sync-twitter:

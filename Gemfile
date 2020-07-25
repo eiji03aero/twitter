@@ -14,6 +14,9 @@ gem 'puma', '~> 4.1'
 gem 'bcrypt', '~> 3.1.7'
 gem 'jwt'
 
+gem 'elasticsearch-rails', git: 'git://github.com/elastic/elasticsearch-rails.git', branch: '6.x'
+gem 'elasticsearch-model', git: 'git://github.com/elastic/elasticsearch-rails.git', branch: '6.x'
+
 # Use Active Storage variant
 # gem 'image_processing', '~> 1.2'
 

@@ -13,6 +13,9 @@
 #  index_micro_posts_on_user_id  (user_id)
 #
 class MicroPost < ApplicationRecord
+  include Elasticsearch::Model
+  include Elasticsearch::Model::Callbacks
+
   MAX_LEN_CONTENT = 170
 
   belongs_to :user
